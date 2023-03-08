@@ -1,0 +1,8 @@
+# created by virtualenv automatically
+.idea
+.idea/**
+bin
+bin/**
+lib
+lib/**
+*.iml

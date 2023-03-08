@@ -2,8 +2,6 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import socket
 
 
-# todo: get /activesessions that returns (mock) number of active sessions
-# todo: post /activesessions that sets the (mock) number of active sessions
 class Server(BaseHTTPRequestHandler):
     activeSessions = 5
 

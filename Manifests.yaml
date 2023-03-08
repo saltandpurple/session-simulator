@@ -6,6 +6,12 @@ metadata:
   labels:
     app: session-simulator
 spec:
+  # todo: Does we need a larger maxSurge?
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
   replicas: 3
   selector:
     matchLabels:
@@ -19,7 +25,22 @@ spec:
         - name: session-simulator
           image: saltandpurple/session-simulator:latest
           ports:
-            - containerPort: 80
+            - containerPort: 8080
+          volumeMounts:
+            - name: session-simulator-prestop
+              mountPath: /etc/prestop.sh
+              subPath: /etc/prestop.sh
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "/etc/prestop.sh"]
+      volumes:
+        - name: session-simulator-prestop
+          configMap:
+            name: session-simulator-presto
+            items:
+              - key: prestop.sh
+                path: prestop.sh
 ---
 apiVersion: v1
 kind: Service
@@ -32,7 +53,7 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 80
+      targetPort: 8080
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -59,7 +80,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: session-simulator
+  name: session-simulator-prestop
   namespace: session-simulator
 data:
   preStop.sh: |

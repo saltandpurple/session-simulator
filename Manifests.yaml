@@ -1,4 +1,9 @@
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: session-simulator
+---
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: session-simulator
@@ -12,7 +17,7 @@ spec:
     rollingUpdate:
       maxUnavailable: 1
       maxSurge: 1
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: session-simulator
@@ -21,15 +26,16 @@ spec:
       labels:
         app: session-simulator
     spec:
+      terminationGracePeriodSeconds: 120
       containers:
         - name: session-simulator
-          image: saltandpurple/session-simulator:latest
+          image: saltandpurple/session-simulator:0.0.1
           ports:
             - containerPort: 8080
           volumeMounts:
             - name: session-simulator-prestop
               mountPath: /etc/prestop.sh
-              subPath: /etc/prestop.sh
+              subPath: prestop.sh
           lifecycle:
             preStop:
               exec:
@@ -37,7 +43,7 @@ spec:
       volumes:
         - name: session-simulator-prestop
           configMap:
-            name: session-simulator-presto
+            name: session-simulator-prestop
             items:
               - key: prestop.sh
                 path: prestop.sh
@@ -83,6 +89,7 @@ metadata:
   name: session-simulator-prestop
   namespace: session-simulator
 data:
-  preStop.sh: |
+  prestop.sh: |
     #!/bin/bash
-    echo "this will be the prestop hook script"
+    echo "Going to sleep for 2m..."
+    sleep 2m
